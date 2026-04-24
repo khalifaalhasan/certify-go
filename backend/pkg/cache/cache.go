@@ -18,6 +18,11 @@ type Cache interface {
 	Ping(ctx context.Context) error
 	Close() error
 	Exists(ctx context.Context, key string) *redis.IntCmd
+
+	// Queue operations (Redis List)
+	LPush(ctx context.Context, key string, values ...interface{}) error
+	BRPop(ctx context.Context, timeout time.Duration, keys ...string) ([]string, error)
+	LLen(ctx context.Context, key string) (int64, error)
 }
 
 type cache struct {
@@ -75,4 +80,23 @@ func (c *cache) Close() error {
 
 func (c *cache) Exists(ctx context.Context, key string) *redis.IntCmd {
 	return c.client.Exists(ctx, key)
+}
+
+func (c *cache) LPush(ctx context.Context, key string, values ...interface{}) error {
+	return c.client.LPush(ctx, key, values...).Err()
+}
+
+func (c *cache) BRPop(ctx context.Context, timeout time.Duration, keys ...string) ([]string, error) {
+	result, err := c.client.BRPop(ctx, timeout, keys...).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *cache) LLen(ctx context.Context, key string) (int64, error) {
+	return c.client.LLen(ctx, key).Result()
 }

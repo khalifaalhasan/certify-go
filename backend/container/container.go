@@ -7,11 +7,13 @@ import (
 	"github.com/base-go/backend/internal/auth"
 	"github.com/base-go/backend/internal/blog"
 	"github.com/base-go/backend/internal/category"
+	"github.com/base-go/backend/internal/certificate"
 	"github.com/base-go/backend/internal/rbac"
 	"github.com/base-go/backend/pkg/cache"
 	"github.com/base-go/backend/pkg/database"
 	"github.com/base-go/backend/pkg/router"
 	"github.com/base-go/backend/pkg/server"
+	"github.com/base-go/backend/pkg/worker"
 )
 
 func New() (*dig.Container, error) {
@@ -75,6 +77,22 @@ func New() (*dig.Container, error) {
 		return nil, err
 	}
 	if err := container.Provide(blog.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// certificate module
+	if err := container.Provide(certificate.NewRepository); err != nil {
+		return nil, err
+	}
+	if err := container.Provide(certificate.NewService); err != nil {
+		return nil, err
+	}
+	if err := container.Provide(certificate.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// certificate worker
+	if err := container.Provide(worker.NewCertificateWorker); err != nil {
 		return nil, err
 	}
 	// end

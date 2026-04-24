@@ -25,3 +25,9 @@ cache:
   host: ${CACHE_HOST}
   port: ${CACHE_PORT}
   db: ${CACHE_DB}
+email:
+  host: ${SMTP_HOST}
+  port: ${SMTP_PORT}
+  username: ${SMTP_USERNAME}
+  password: ${SMTP_PASSWORD}
+  from: ${SMTP_FROM}
