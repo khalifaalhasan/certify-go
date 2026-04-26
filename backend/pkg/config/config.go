@@ -13,6 +13,7 @@ type Config struct {
 	Auth     Auth     `yaml:"auth"`
 	Database Database `yaml:"database"`
 	Cache    Cache    `yaml:"cache"`
+	Email    Email    `yaml:"email"`
 }
 
 var (

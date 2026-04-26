@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -18,6 +19,7 @@ import (
 	containerPkg "github.com/base-go/backend/container"
 	"github.com/base-go/backend/pkg/config"
 	"github.com/base-go/backend/pkg/server"
+	"github.com/base-go/backend/pkg/worker"
 )
 
 var environtment string
@@ -71,6 +73,7 @@ func main() {
 
 func Start(
 	svr server.Server,
+	certWorker *worker.CertificateWorker,
 ) {
 
 	cfg := config.GetConfig()
@@ -95,6 +98,10 @@ func Start(
 		log.Fatalf("Error running migration: %s", err)
 	}
 	log.Println("Database migration succeeded")
+
+	// Start certificate delivery worker
+	log.Println("Starting certificate delivery worker...")
+	certWorker.Start(context.Background())
 
 	log.Println("Starting server...")
 	if err := svr.Start(); err != nil {

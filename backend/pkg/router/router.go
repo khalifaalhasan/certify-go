@@ -7,6 +7,7 @@ import (
 	"github.com/base-go/backend/internal/auth"
 	"github.com/base-go/backend/internal/blog"
 	"github.com/base-go/backend/internal/category"
+	"github.com/base-go/backend/internal/certificate"
 	"github.com/base-go/backend/internal/rbac"
 	"github.com/base-go/backend/pkg/middleware"
 	"github.com/base-go/backend/pkg/response"
@@ -25,6 +26,7 @@ func SetupRoutes(
 	rbacRepo rbac.Repository,
 	categoryHandler category.Handler,
 	blogHandler blog.Handler,
+	certificateHandler certificate.Handler,
 ) *chi.Mux {
 	mux := chi.NewRouter()
 
@@ -200,6 +202,27 @@ func SetupRoutes(
 				r.Group(func(r chi.Router) {
 					r.Post("/check-permission", rbacHandler.CheckPermission)
 					r.Post("/check-module-access", rbacHandler.CheckModuleAccess)
+				})
+			})
+
+			// Certificate Management (Admin / Super Admin)
+			r.Route("/certificates", func(r chi.Router) {
+				r.Use(middleware.RequireRole("Super Admin", "Admin"))
+
+				r.Get("/", certificateHandler.List)
+				r.Post("/", certificateHandler.Create)
+
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", certificateHandler.GetByID)
+					r.Put("/", certificateHandler.Update)
+					r.Delete("/", certificateHandler.Delete)
+
+					// Recipient management
+					r.Post("/recipients", certificateHandler.AddRecipients)
+					r.Get("/recipients", certificateHandler.ListRecipients)
+
+					// Dispatch deliveries to Redis queue
+					r.Post("/dispatch", certificateHandler.Dispatch)
 				})
 			})
 		})
